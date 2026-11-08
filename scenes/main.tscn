@@ -1,5 +1,7 @@
 [gd_scene load_steps=2 format=3]
 
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+
 [sub_resource type="Environment" id="Env_boot"]
 background_mode = 1
 background_color = Color(0.00392157, 0.00784314, 0.0156863, 1)
@@ -10,14 +12,8 @@ tonemap_mode = 2
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_boot")
 
-[node name="UI" type="CanvasLayer" parent="."]
-
-[node name="Title" type="Label" parent="UI"]
+[node name="MenuRoot" type="Control" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_font_sizes/font_size = 64
-text = "ABYSS — PHOBIA EXPERIENCE
-Главное меню (dev)"
-horizontal_alignment = 1
-vertical_alignment = 1
+script = ExtResource("1_menu")

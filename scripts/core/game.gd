@@ -10,6 +10,8 @@ const MENU_SCENE := "res://scenes/main.tscn"
 const SCENE_OCEAN := preload("res://scripts/systems/ocean_environment.gd")
 const SCENE_UNDERWATER := preload("res://scripts/systems/underwater_rendering.gd")
 const SCENE_DEPTH := preload("res://scripts/systems/depth_manager.gd")
+const SCENE_PARTICLES := preload("res://scripts/systems/underwater_particles.gd")
+const SCENE_BREATH := preload("res://scripts/systems/breath_system.gd")
 const SCENE_MARINE := preload("res://scripts/marine/marine_life_manager.gd")
 
 var _player: CharacterBody3D
@@ -64,6 +66,16 @@ func _ready() -> void:
 	marine.name = "MarineLifeManager"
 	systems.add_child(marine)
 	marine.call("setup", ocean, _player)
+
+	# --- Взвесь и дыхание ---
+	var particles: Node3D = SCENE_PARTICLES.new()
+	particles.name = "UnderwaterParticles"
+	systems.add_child(particles)
+	particles.call("setup", _player)
+	var breath: Node = SCENE_BREATH.new()
+	breath.name = "BreathSystem"
+	systems.add_child(breath)
+	breath.call("setup", _player)
 
 	# --- Ввод и HUD ---
 	_controls = CanvasLayer.new()
