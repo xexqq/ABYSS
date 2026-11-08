@@ -1,0 +1,18 @@
+# Godot 4
+.godot/
+*.tmp
+.DS_Store
+
+# Local build artifacts
+build/
+*.apk
+*.aab
+*.keystore
+*.tpz
+*.zip
+
+# Duplicates of downloads (raw sources)
+assets/_downloads/
+
+# Logs
+*.log

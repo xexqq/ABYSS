@@ -1,0 +1,115 @@
+name: ABYSS Android Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check project.godot exists
+        run: |
+          test -f project.godot
+          echo "project.godot OK"
+
+      - name: Check Android export preset exists
+        run: |
+          grep -q '"ABYSS Android"' export_presets.cfg
+          echo "Export preset 'ABYSS Android' OK"
+
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK (platform, build-tools, licenses)
+        run: |
+          sdkmanager --version
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null
+          echo "ANDROID_HOME=$ANDROID_HOME"
+
+      - name: Install Godot 4.7.2-stable (Linux x64)
+        run: |
+          mkdir -p godot
+          curl -L -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d godot
+          GODOT_BIN=$(find godot -name "*linux.x86_64" | head -1)
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --version
+          echo "GODOT_BIN=$GODOT_BIN" >> $GITHUB_ENV
+
+      - name: Install Godot Export Templates 4.7.2-stable
+        run: |
+          curl -L -o templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates
+          unzip -q templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates ~/.local/share/godot/export_templates/4.7.2.stable
+          ls ~/.local/share/godot/export_templates/4.7.2.stable | head -5
+
+      - name: Import project resources (headless)
+        run: |
+          "$GODOT_BIN" --headless --import 2>&1 | tee import.log
+          echo "Import finished"
+
+      - name: Check critical GDScript errors
+        run: |
+          if grep -qiE "SCRIPT ERROR|Parse Error" import.log; then
+            echo "Critical script errors found:"; grep -iE "SCRIPT ERROR|Parse Error" import.log; exit 1
+          fi
+          echo "No critical script errors"
+
+      - name: Generate debug keystore (temporary, not committed)
+        run: |
+          mkdir -p /tmp/keys
+          keytool -genkeypair -v \
+            -keystore /tmp/keys/debug.keystore \
+            -storepass android -keypass android \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 \
+            -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          echo "DEBUG_KEYSTORE=/tmp/keys/debug.keystore" >> $GITHUB_ENV
+
+      - name: Export Android APK (debug, ARM64)
+        run: |
+          mkdir -p build
+          # debug-keystore подключается к пресету (Godot CLI не берет keystore аргументами)
+          sed -i 's|^debug/keystore/name=.*|debug/keystore/name="/tmp/keys/debug.keystore"|' export_presets.cfg
+          sed -i 's|^debug/keystore/user=.*|debug/keystore/user="androiddebugkey"|' export_presets.cfg
+          sed -i 's|^debug/keystore/password=.*|debug/keystore/password="android"|' export_presets.cfg
+          "$GODOT_BIN" --headless --export-debug "ABYSS Android" build/ABYSS.apk 2>&1 | tee export.log
+          echo "--- export.log tail ---"
+          tail -20 export.log
+
+      - name: Verify APK exists and is not empty
+        run: |
+          test -s build/ABYSS.apk || { echo "ERROR: APK missing or empty"; exit 1; }
+          SIZE=$(stat -c%s build/ABYSS.apk)
+          echo "APK size: $SIZE bytes"
+          MIN=3000000
+          if [ "$SIZE" -lt $MIN ]; then echo "ERROR: APK suspiciously small (<3 MB)"; exit 1; fi
+          unzip -l build/ABYSS.apk | grep -E "\.so|AndroidManifest" | head -5
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ABYSS-Android-debug-APK
+          path: build/ABYSS.apk
+          if-no-files-found: error
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            import.log
+            export.log
+          if-no-files-found: ignore
