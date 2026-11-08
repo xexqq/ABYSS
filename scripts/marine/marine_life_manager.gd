@@ -60,7 +60,7 @@ func _spawn_creature(scene_path: String, home: Vector3, cfg: Dictionary) -> void
 	if ps == null:
 		push_warning("MarineLifeManager: нет сцены " + scene_path)
 		return
-	var inst := ps.instantiate()
+	var inst: Node3D = ps.instantiate()
 	inst.name = scene_path.get_file().get_basename()
 	add_child(inst)
 	inst.position = home

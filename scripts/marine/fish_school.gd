@@ -39,12 +39,12 @@ func _spawn_members() -> void:
 		return
 	var siblings: Array = []
 	for i in range(fish_count):
-		var inst := ps.instantiate()
+		var inst: Node3D = ps.instantiate()
 		add_child(inst)
 		inst.position = home_offset()
 		siblings.append(inst)
 	for i in range(siblings.size()):
-		var inst := siblings[i]
+		var inst: Node3D = siblings[i]
 		inst.set_script(load("res://scripts/marine/fish_member.gd"))
 		inst.call("setup", self, siblings, school_radius, swim_speed)
 		_play_swim(inst)
