@@ -10,6 +10,7 @@ const MENU_SCENE := "res://scenes/main.tscn"
 const SCENE_OCEAN := preload("res://scripts/systems/ocean_environment.gd")
 const SCENE_UNDERWATER := preload("res://scripts/systems/underwater_rendering.gd")
 const SCENE_DEPTH := preload("res://scripts/systems/depth_manager.gd")
+const SCENE_MARINE := preload("res://scripts/marine/marine_life_manager.gd")
 
 var _player: CharacterBody3D
 var _camera: Camera3D
@@ -57,6 +58,12 @@ func _ready() -> void:
 
 	depth.set("player", _player)
 	_rendering.call("setup", ocean.environment_res, ocean.sun)
+
+	# --- Морская жизнь (Этап 4) ---
+	var marine: Node = SCENE_MARINE.new()
+	marine.name = "MarineLifeManager"
+	systems.add_child(marine)
+	marine.call("setup", ocean, _player)
 
 	# --- Ввод и HUD ---
 	_controls = CanvasLayer.new()
