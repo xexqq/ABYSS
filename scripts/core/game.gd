@@ -19,9 +19,13 @@ var _camera: Camera3D
 var _controls: CanvasLayer
 var _ui: CanvasLayer
 var _rendering: Node
+var _dbg: Label
 
 
 func _ready() -> void:
+	_build_debug_overlay()
+	_dbg_log("boot")
+
 	# --- Мир ---
 	var world := Node3D.new()
 	world.name = "World"
@@ -30,6 +34,7 @@ func _ready() -> void:
 	ocean.name = "OceanEnvironment"
 	world.add_child(ocean)
 	ocean.call("build", world)
+	_dbg_log("world ok")
 
 	# --- Системы ---
 	var systems := Node.new()
@@ -57,36 +62,24 @@ func _ready() -> void:
 	_camera.make_current()
 	_player.call("attach_camera", _camera)
 	_camera.call("setup", _player, 0.15, deg_to_rad(PLAYER_SPAWN_YAW_DEG))
+	_dbg_log("player ok")
 
 	depth.set("player", _player)
-	_rendering.call("setup", ocean.environment_res, ocean.sun)
+	if _rendering.has_method("setup"):
+		_rendering.call("setup", ocean.environment_res, ocean.sun)
+	_dbg_log("render ok")
 
-	# --- Морская жизнь (Этап 4) ---
-	var marine: Node = SCENE_MARINE.new()
-	marine.name = "MarineLifeManager"
-	systems.add_child(marine)
-	marine.call("setup", ocean, _player)
-
-	# --- Взвесь и дыхание ---
-	var particles: Node3D = SCENE_PARTICLES.new()
-	particles.name = "UnderwaterParticles"
-	systems.add_child(particles)
-	particles.call("setup", _player)
-	var breath: Node = SCENE_BREATH.new()
-	breath.name = "BreathSystem"
-	systems.add_child(breath)
-	breath.call("setup", _player)
-
-	# --- Ввод и HUD ---
+	# --- Ввод и HUD: добавляем СРАЗУ, чтобы ввод/HUD жили независимо
+	# от поздних систем (морская жизнь/частицы/дыхание).
 	_controls = CanvasLayer.new()
 	_controls.name = "TouchControls"
 	_controls.set_script(load("res://scripts/input/touch_controls.gd"))
 	add_child(_controls)
-
 	_ui = CanvasLayer.new()
 	_ui.name = "UIManager"
 	_ui.set_script(load("res://scripts/systems/ui_manager.gd"))
 	add_child(_ui)
+	_dbg_log("ui ok")
 
 	# --- Соединения: ввод → игрок/камера/пауза ---
 	_controls.connect("move_changed", _on_move_changed)
@@ -94,17 +87,81 @@ func _ready() -> void:
 	_controls.connect("descend_changed", _on_descend_changed)
 	_controls.connect("look_moved", _on_look_moved)
 	_controls.connect("pause_pressed", _on_pause_pressed)
-
 	# --- Соединения: пауза-меню ---
 	_ui.connect("resume_requested", _on_resume_requested)
 	_ui.connect("return_to_menu_requested", _on_return_to_menu_requested)
-
 	# --- Соединения: глубина → HUD/рендер/звук ---
 	depth.connect("depth_changed", _on_depth_changed)
-
 	AudioManager.start_ambient()
 	_ui.call("set_depth", maxf(0.0, -PLAYER_SPAWN.y))
 	_rendering.call("set_depth", maxf(0.0, -PLAYER_SPAWN.y))
+	_dbg_log("wiring ok")
+
+	# --- Морская жизнь (Этап 4) — некритична для играбельности ---
+	_spawn_deferred(systems, ocean, _player)
+	# начальный статус HUD
+	_ui.call("set_depth", maxf(0.0, -PLAYER_SPAWN.y))
+
+
+func _spawn_deferred(systems: Node, ocean: Node, player: Node3D) -> void:
+	# некритичные модули: отказ одного не должен ломать ввод/HUD.
+	var marine: Node = SCENE_MARINE.new()
+	marine.name = "MarineLifeManager"
+	systems.add_child(marine)
+	marine.call("setup", ocean, player)
+	_dbg_log("marine ok")
+
+	var particles: Node3D = SCENE_PARTICLES.new()
+	particles.name = "UnderwaterParticles"
+	systems.add_child(particles)
+	particles.call("setup", player)
+	_dbg_log("particles ok")
+
+	var breath: Node = SCENE_BREATH.new()
+	breath.name = "BreathSystem"
+	systems.add_child(breath)
+	breath.call("setup", player)
+	_dbg_log("breath ok")
+
+
+func _build_debug_overlay() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 99
+	layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(layer)
+	_dbg = Label.new()
+	_dbg.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_dbg.offset_left = 24.0
+	_dbg.offset_top = 24.0
+	_dbg.offset_right = 720.0
+	_dbg.offset_bottom = 200.0
+	_dbg.add_theme_font_size_override("font_size", 30)
+	_dbg.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3, 0.85))
+	layer.add_child(_dbg)
+	var t := Timer.new()
+	t.wait_time = 1.0
+	t.autostart = true
+	t.timeout.connect(_dbg_update)
+	layer.add_child(t)
+
+
+func _dbg_log(msg: String) -> void:
+	if _dbg != null:
+		_dbg.text = msg
+
+
+func _dbg_update() -> void:
+	if _dbg == null:
+		return
+	var pos := Vector3.ZERO
+	if _player != null and is_instance_valid(_player):
+		pos = _player.global_position
+	_dbg.text = "%s | fps %d\ny=%.1f v=%.1f" % [
+		_dbg.text.split("\n")[0],
+		Engine.get_frames_per_second(),
+		pos.y,
+		(_player.velocity.length() if _player is CharacterBody3D else 0.0),
+	]
 
 
 func _on_move_changed(v: Vector2) -> void:

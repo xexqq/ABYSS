@@ -146,7 +146,7 @@ func _active(role: int) -> bool:
 func _paint() -> void:
 	var t := _layer_node as Control
 	# Пауза (иконка ||)
-	t.draw_circle(_pause_center, 44.0, Color(1, 1, 1, 0.12))
+	t.draw_circle(_pause_center, 44.0, Color(1, 1, 1, 0.28))
 	t.draw_arc(_pause_center, 44.0, 0, TAU, 48, Color(1, 1, 1, 0.5), 2.0, false)
 	t.draw_line(_pause_center + Vector2(-9, -12), _pause_center + Vector2(-9, 12), Color(1, 1, 1, 0.9), 5.0)
 	t.draw_line(_pause_center + Vector2(9, -12), _pause_center + Vector2(9, 12), Color(1, 1, 1, 0.9), 5.0)
@@ -168,8 +168,8 @@ func _paint() -> void:
 
 func _paint_arrow_button(t: Control, c: Vector2, up: bool) -> void:
 	var pressed := _active(Role.ASC if up else Role.DESC)
-	var col := Color(1, 1, 1, 0.55) if pressed else Color(1, 1, 1, 0.30)
-	t.draw_circle(c, _btn_radius, Color(1, 1, 1, 0.10 if not pressed else 0.26))
+	var col := Color(1, 1, 1, 0.9) if pressed else Color(1, 1, 1, 0.6)
+	t.draw_circle(c, _btn_radius, Color(1, 1, 1, 0.30 if not pressed else 0.55))
 	t.draw_arc(c, _btn_radius, 0, TAU, 48, col, 2.5, false)
 	var dir := -1.0 if up else 1.0
 	var tip := c + Vector2(0, dir * _btn_radius * 0.5)

@@ -149,7 +149,7 @@ func _refresh_pause_buttons() -> void:
 
 
 func set_depth(d: float) -> void:
-	_depth_label.text = "Глубина: %.0f м  ·  %s" % [d, SCRIPT_DEPTH.call("zone_name", d)]
+	_depth_label.text = "Глубина: %.0f м  ·  %s" % [d, SCRIPT_DEPTH.zone_name(d)]
 
 
 func set_paused(p: bool) -> void:
