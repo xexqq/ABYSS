@@ -30,6 +30,7 @@ jobs:
 
       - name: Setup Android SDK (platform, build-tools, licenses)
         run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
           sdkmanager --version
           yes | sdkmanager --licenses > /dev/null
           sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" > /dev/null
