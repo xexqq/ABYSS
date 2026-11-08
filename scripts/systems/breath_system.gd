@@ -38,7 +38,7 @@ func setup(player: Node3D) -> void:
 	_particles.name = "BreathBubbles"
 	_particles.amount = 40
 	_particles.lifetime = 5.0
-	_particles.visibility_aabb = AABB(-6, -4, -6, 12, 20, 12)
+	_particles.visibility_aabb = AABB(Vector3(-6, -4, -6), Vector3(12, 20, 12))
 	var mat := ParticleProcessMaterial.new()
 	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	mat.emission_sphere_radius = 0.28

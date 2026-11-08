@@ -28,7 +28,7 @@ func _build() -> void:
 	_particles.amount = amount
 	_particles.lifetime = 14.0
 	_particles.preprocess = 14.0
-	_particles.visibility_aabb = AABB(-40, -30, -40, 80, 60, 80)
+	_particles.visibility_aabb = AABB(Vector3(-40, -30, -40), Vector3(80, 60, 80))
 
 	var mat := ParticleProcessMaterial.new()
 	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
