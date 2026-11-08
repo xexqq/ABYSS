@@ -2,6 +2,8 @@ extends CanvasLayer
 ## UIManager — HUD (глубина + зона) и меню паузы. Собирается кодом,
 ## адаптируется к любому разрешению через anchors.
 
+const SCRIPT_DEPTH := preload("res://scripts/systems/depth_manager.gd")
+
 signal resume_requested
 signal return_to_menu_requested
 
@@ -147,7 +149,7 @@ func _refresh_pause_buttons() -> void:
 
 
 func set_depth(d: float) -> void:
-	_depth_label.text = "Глубина: %.0f м  ·  %s" % [d, DepthManager.zone_name(d)]
+	_depth_label.text = "Глубина: %.0f м  ·  %s" % [d, SCRIPT_DEPTH.call("zone_name", d)]
 
 
 func set_paused(p: bool) -> void:

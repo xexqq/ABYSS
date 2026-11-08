@@ -6,6 +6,10 @@ extends Node3D
 const PLAYER_SPAWN := Vector3(0.0, -7.0, 70.0)
 const PLAYER_SPAWN_YAW_DEG := 180.0  # взгляд из спавна к центру рифа
 const MENU_SCENE := "res://scenes/main.tscn"
+# Явные preload (не class_name): устойчиво к порядку парсинга на первой импортции CI.
+const SCENE_OCEAN := preload("res://scripts/systems/ocean_environment.gd")
+const SCENE_UNDERWATER := preload("res://scripts/systems/underwater_rendering.gd")
+const SCENE_DEPTH := preload("res://scripts/systems/depth_manager.gd")
 
 var _player: CharacterBody3D
 var _camera: Camera3D
@@ -19,21 +23,21 @@ func _ready() -> void:
 	var world := Node3D.new()
 	world.name = "World"
 	add_child(world)
-	var ocean := OceanEnvironment.new()
+	var ocean: Node = SCENE_OCEAN.new()
 	ocean.name = "OceanEnvironment"
 	world.add_child(ocean)
-	ocean.build(world)
+	ocean.call("build", world)
 
 	# --- Системы ---
 	var systems := Node.new()
 	systems.name = "Systems"
 	add_child(systems)
 
-	_rendering = load("res://scripts/systems/underwater_rendering.gd").new()
+	_rendering = SCENE_UNDERWATER.new()
 	_rendering.name = "UnderwaterRendering"
 	systems.add_child(_rendering)
 
-	var depth: Node = load("res://scripts/systems/depth_manager.gd").new()
+	var depth: Node = SCENE_DEPTH.new()
 	depth.name = "DepthManager"
 	systems.add_child(depth)
 
