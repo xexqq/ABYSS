@@ -1,73 +1,43 @@
 # ABYSS_GITHUB_BUILD_REPORT.md
 Дата: 08.11.2026
 
-## Статус: ОФОРМЛЕНО ЛОКАЛЬНО, ЗАБЛОКИРОВАНО НА СОЗДАНИИ РЕПОЗИТОРИЯ
+## Статус: ✅ УСПЕШНАЯ СБОРКА APK В GITHUB ACTIONS
 
-## 1. Репозиторий
-- Аккаунт: **xexqq** (проверено через GitHub MCP).
-- Существующий репозиторий ABYSS: **НЕТ** (просмотрены все 11 репо — дублей нет).
-- Создать через MCP API невозможно: GitHub возвращает ошибку `Due to U.S. trade controls law restrictions, we are unable to provide this access to this API` — блокировка на создание новых репо через API с текущей сетевой точки (при этом существующие репозитории читаются/пишутся вполне нормально).
-- **Что нужно от тебя (1 минута):**
-  1. открыть https://github.com/new
-  2. Repository name: `ABYSS`
-  3. Visibility: Private
-  4. НЕ добавлять README/gitignore/license (иначе конфликт с первым push)
-  5. нажать Create repository
-  После этого скажи мне «репо же создан» — я запушу все файлы и запущу workflow в той же сессии.
+## 1. Репозиторий — ГОТОВО
+- URL: **https://github.com/xexqq/ABYSS** (public, ветка `main`).
+- Создан пользователем вручную (создание репо через MCP API заблокировано — U.S. trade controls).
+- Push выполнен локально через git HTTPS + PAT из opencode.json (токен не логировался, remote после push удалялся).
+- Содержимое: `project.godot`, `export_presets.cfg`, `.github/workflows/android-build.yml`, `assets/`, `docs/`, `ASSET_LICENSES.md`, `README.md`, `.gitignore` — **232 файла**.
 
-## 2. Локальный проект (готов к push) — /root/ABYSS
-```
-.github/workflows/android-build.yml   # CI сборка APK
-assets/ (модели GLB/GLTF+текстуры PBR 1K/HDRI/аудио OGG+WAV)
-addons/  scenes/  scripts/  resources/  tests/  docs/
-project.godot          # Godot 4.7, Mobile renderer, landscape, icon
-export_presets.cfg     # пресет "ABYSS Android": ARM64-v8a, APK, com.xex.abyss
-ASSET_LICENSES.md      # реестр лицензий
-README.md  .gitignore
-git-место: /root/ABYSS (локальная папка; 196 MB, .git инициализировать буду при push)
-```
+## 2. Коммиты
+- `84a482f` Initial ABYSS project: Godot 4.7 scaffold, CC0 assets, Android export preset, CI workflow (232 файла).
+- `70487e1` CI fix: add cmdline-tools to PATH for sdkmanager.
+- `5532afe` Enable ETC2/ASTC VRAM texture compression (required for Android export).
 
-## 3. Workflow `.github/workflows/android-build.yml`
-- Запуск: `workflow_dispatch` + `push→main`
-- Runner: ubuntu-latest
-- Проверки: `project.godot` существует; пресет «ABYSS Android» найден
-- Java 17 (Temurin, setup-java)
-- Android SDK: `platforms;android-34`, `build-tools;34.0.0`, `platform-tools`, лицензии
-- Godot: официальный релиз `4.7.2-stable` linux x86_64 (`--version` проверка)
-- Export Templates: `Godot_v4.7.2-stable_export_templates.tpz` → `~/.local/share/godot/export_templates/4.7.2.stable/` (соответствие версий гарантировано: template и Godot из одного релиза)
-- `--headless --import` (импорт ресурсов; лог сохраняется)
-- Проверка «нет критических SCRIPT ERROR / Parse Error» (по логу)
-- debug-keystore: keytool генерирует `/tmp/keys/debug.keystore` НО НЕ коммитится; пресет получает keystore через sed-подстановку в CI-шаге
-- `--headless --export-debug "ABYSS Android" build/ABYSS.apk`
-- Верификация APK: существует, >3 MB, есть .so/AndroidManifest
-- Артефакт: `ABYSS-Android-debug-APK`
-- Инфо-логи при неудаче: import.log/export.log отдельным artifact
+## 3. Прогоны CI (workflow_dispatch + push)
+| Run | Результат | Причина | Решение |
+|-----|-----------|---------|---------|
+| 42434548140 | ❌ failure | `sdkmanager: command not found` (exit 127) — cmdline-tools не в PATH на раннере | добавлен `export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"` |
+| 42507949539 | ❌ failure | Godot: `ETC2/ASTC texture compression is required for Android export` — APK не создан | в `project.godot` добавлено `textures/vram_compression/import_etc2_astc=true` |
+| **42508181982** | ✅ **success** | — | APK собран и загружен артефактом |
 
-## 4. Настройки PHP Android Export Preset
-| Параметр | Значение |
-|---|---|
-| Имя пресета | ABYSS Android |
-| Формат | APK (для тестирования) |
-| Архитектура | ARM64-v8a (единственная) |
-| Package ID | com.xex.abyss |
-| Название приложения | ABYSS — PHOBIA EXPERIENCE |
-| Категория | Games |
-| Ориентация | Landscape (project.godot: window/handheld/orientation=0) |
-| Min Android | зависит от Godot 4.7 (по умолчанию пресета — Gradle-min); совместимо с SDK 34 розвитfmt |
-| Рендер | Godot Mobile renderer (project.godot) |
-| Подпись | debug (временный keystore от runner'a), Release — ЛЮДИ, секреты в GitHub Actions Secrets |
-| Immersive mode | on |
+Логи: https://github.com/xexqq/ABYSS/actions/runs/42508181982
+Job: `build-apk` — все шаги прошли (checkout → YAML-check → Java 17 Temurin → Android SDK → Godot 4.7.2 x64 → templates 4.7.2 → `--import` (0 SCRIPT ERROR) → keytool debug-keystore → sed-keystore в пресет → `--export-debug "ABYSS Android"` → verify → artifact).
 
-## 5. Результат тестовой сборки
-- НЕ запущена: репозитория ещё нет → тестовой GitHub Actions Run нет.
-- Согласно п.12.7 md: поскольку проект ещё не содержит полноценной игры (нет сцен — я CHECKем проверить, будет ли сборка успешной уже после создания репо — там обработка файла проекта с одним `project.godot` обычно собираёт валидный- пустой APK; скорее всего удастся проверить SATISFY).
-- Обещание: НЕ заявлять об успешном APK верифably до фактического зеленого Run.
+## 4. Результат сборки
+- **APK: `build/ABYSS.apk`, 277 994 073 байт (~265 МБ)** — debug, ARM64-v8a, `com.xex.abyss` (`Application/com.xex.abyss`).
+- Артефакт: **`ABYSS-Android-debug-APK`** (zip ~274,99 МБ):
+  https://github.com/xexqq/ABYSS/actions/runs/42508181982 → раздел Artifacts (нужен вход в GitHub).
+- Внутри APK: `lib/arm64-v8a/libgodot_android.so`, AndroidManifest — проверено `unzip -l` на раннере.
+- Размер большой из-за включённых в PCK CC0-моделей/текстур Poly Haven (dutch_ship 69k tris, HDRI) — это норма для first build; оптимизация позже.
 
-## 6. Что требуется для Release (будущее)
-- GitHub Actions Secrets: `KEYSTORE` (base64), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
-- Workflow-release-release-вариант (exclusion выброс/release-notes/прик статически)
-- Пока НЕ настраиваю (п.12.6 md: «пока не публикуй релиз автоматически»)
+## 5. Технические заметки (для будущих правок)
+- Keystore: debug-keystore генерируется `keytool` в CI (`/tmp/keys/debug.keystore`, pass `android`) и подключается в `export_presets.cfg` через sed — в отсутствии релизного ключа.
+- Импорт Godot в CI: `--headless --import` прошёл БЕЗ SCRIPT ERROR/Parse Error (проверка grep в workflow).
+- Локальный Godot-редактор в PRoot по-прежнему крашится (double free) — вся валидация идёт в CI; локально CLI работает.
+- Git: при `gc --aggressive` в PRoot повредились объекты (PRoot mmap-особенность) — рабочий коммит восстановлен пересозданием репозитория поверх рабочей папки; для локального .git лучше не запускать aggressive gc.
 
-## 7. Источник GitHub-офиса:
-- Godot release: https://github.com/godotengine/godot/releases/tag/4.7.2-stable
-- Export Docs: https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_android.html
+## 6. Что дальше
+- Скачать APK из артефакта (логин в GitHub) и поставить на POCO F7 для smoke-теста.
+- Оптимизация ассетов (слишком тяжёлые PCK) — отдельная задача.
+- Разработка первой игровой сцены — ТОЛЬКО после твоего разрешения.
