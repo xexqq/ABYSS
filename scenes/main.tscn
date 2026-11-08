@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="Environment" id="Env_boot"]
+background_mode = 1
+background_color = Color(0.00392157, 0.00784314, 0.0156863, 1)
+tonemap_mode = 2
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_boot")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Title" type="Label" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_font_sizes/font_size = 64
+text = "ABYSS — PHOBIA EXPERIENCE
+Boot scene (placeholder)"
+horizontal_alignment = 1
+vertical_alignment = 1
