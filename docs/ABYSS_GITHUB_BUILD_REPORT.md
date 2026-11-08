@@ -41,3 +41,10 @@ Job: `build-apk` — все шаги прошли (checkout → YAML-check → J
 - Скачать APK из артефакта (логин в GitHub) и поставить на POCO F7 для smoke-теста.
 - Оптимизация ассетов (слишком тяжёлые PCK) — отдельная задача.
 - Разработка первой игровой сцены — ТОЛЬКО после твоего разрешения.
+
+## 7. Фикс запуска на устройстве (08.11.2026, вечер)
+- Симптом: «ERROR! Unable to setup the Godot engine! Aborting...» при запуске APK.
+- Причина: не задана главная сцена — Godot прерывает setup на Android при отсутствии main scene (подтверждено issue godotengine/godot#86565).
+- Фикс: добавлена placeholder-сцена `scenes/main.tscn` (тёмный фон + Label «ABYSS — PHOBIA EXPERIENCE / Boot scene»), в `project.godot` прописан `run/main_scene="res://scenes/main.tscn"`. Коммит `01e026e`.
+- Результат: Run 42510623495 ✅ success — новый APK в артефакте `ABYSS-Android-debug-APK` (https://github.com/xexqq/ABYSS/actions/runs/42510623495).
+- ВАЖНО: debug-keystore генерируется заново на каждый run → перед установкой нового APK **сначала удалить старый** (иначе Android откажет: подпись не совпадает).
