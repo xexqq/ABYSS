@@ -76,7 +76,6 @@ func _build_terrain(root: Node3D) -> void:
 	var count := n + 1
 	var step := (WORLD_HALF * 2.0) / n
 	var half := WORLD_HALF
-	var k := terrain_height
 	# высоты и UV
 	var verts := PackedVector3Array(); verts.resize(count * count)
 	var norm := PackedVector3Array(); norm.resize(count * count)
@@ -86,7 +85,7 @@ func _build_terrain(root: Node3D) -> void:
 		for i in range(count):
 			var x := -half + i * step
 			var z := -half + j * step
-			var y := k(x, z)
+			var y := terrain_height(x, z)
 			verts[j * count + i] = Vector3(x, y, z)
 			uvs[j * count + i] = Vector2(i / float(n), j / float(n))
 	# нормали (finite difference) + касательные
@@ -95,8 +94,8 @@ func _build_terrain(root: Node3D) -> void:
 		for i in range(count):
 			var x := verts[j * count + i].x
 			var z := verts[j * count + i].z
-			var nx := k(x - e, z) - k(x + e, z)
-			var nz := k(x, z - e) - k(x, z + e)
+			var nx := terrain_height(x - e, z) - terrain_height(x + e, z)
+			var nz := terrain_height(x, z - e) - terrain_height(x, z + e)
 			var nv := Vector3(nx, 2.0 * e, nz).normalized()
 			norm[j * count + i] = nv
 			var tv := (Vector3(1.0, 0.0, 0.0) - nv * nv.x)

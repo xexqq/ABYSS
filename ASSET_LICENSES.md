@@ -46,3 +46,7 @@
 ## НЕ подлежат использованию
 - Всё, где лицензия неясна или «unchecked» у конкретного файла (правило md).
 - 8K/16K текстуры (мобильный бюджет), ремастере-пресеты платных шейдеров.
+
+## Kenney Modular Cave Kit (12.2025, 40 GLB) — полная поставка
+- Источник: kenney.nl (модели: assets/models/caves/*.glb) + текстура-палитра colormap.png (assets/models/caves/Textures/).
+- Лицензия: CC0 (License.txt хранится рядом: assets/models/caves/LICENSE_Kenney.txt).

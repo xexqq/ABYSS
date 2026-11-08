@@ -6,12 +6,12 @@ config_version=5
 config/name="ABYSS — PHOBIA EXPERIENCE"
 run/main_scene="res://scenes/game.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://assets/ui/icon.svg"
 
 [autoload]
 
 SettingsManager="*res://scripts/systems/settings_manager.gd"
 AudioManager="*res://scripts/systems/audio_manager.gd"
-config/icon="res://assets/ui/icon.svg"
 
 [display]
 

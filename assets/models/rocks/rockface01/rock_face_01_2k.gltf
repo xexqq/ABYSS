@@ -70,17 +70,17 @@
     {
       "mimeType": "image/jpeg",
       "name": "rock_face_01_nor_gl",
-      "uri": "textures/rock_face_01_nor_gl_2k.jpg"
+      "uri": "rock_face_01_nor_gl_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "rock_face_01_diff",
-      "uri": "textures/rock_face_01_diff_2k.jpg"
+      "uri": "rock_face_01_diff_2k.jpg"
     },
     {
       "mimeType": "image/jpeg",
       "name": "rock_face_01_rough",
-      "uri": "textures/rock_face_01_arm_2k.jpg"
+      "uri": "rock_face_01_arm_2k.jpg"
     }
   ],
   "accessors": [
