@@ -183,9 +183,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _btn_rects() -> Array:
 	var out := []
+	var pad := maxf(10.0, _current_radius() * 0.22)
 	for b in [_btn_asc, _btn_desc, _btn_pause]:
 		if b != null and is_instance_valid(b):
-			out.append(b.get_global_rect().grow(28.0))
+			out.append(b.get_global_rect().grow(pad))
 	return out
 
 

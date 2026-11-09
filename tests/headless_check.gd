@@ -10,7 +10,7 @@ var fails: PackedStringArray = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().root.content_scale_factor = 1.0
+	get_window().size = Vector2i(1280, 720)
 	_run_check()
 
 
@@ -66,26 +66,38 @@ func _run_check() -> void:
 	print("RUNTIME_CHECK: yaw %.3f -> %.3f" % [yaw_before, yaw_after])
 	_assert(absf(wrapf(yaw_after - yaw_before, -PI, PI)) > 0.03, "camera swipe", "dyaw %.4f" % (yaw_after - yaw_before))
 
-	# --- 4. Кнопки подъёма/погружения ---
+	# --- 4. Кнопки подъёма/погружения: читаем скорость ВО ВРЕМЯ удержания ---
 	var asc := controls._btn_asc as Button
 	var desc := controls._btn_desc as Button
 	if asc != null and desc != null:
-		await _tap_button(asc, 2, 25)
+		var c_asc := _global_center(asc)
+		_touch(2, c_asc, true)
+		await _wait_frames(28)
 		var up_vel := player.velocity.y
 		print("RUNTIME_CHECK: ascend vy=", up_vel)
 		_assert(absf(up_vel) > 0.1, "ascend", "vy %.2f" % up_vel)
-		await _tap_button(desc, 2, 25)
+		_touch(2, c_asc, false)
+		await _wait_frames(10)
+
+		var c_desc := _global_center(desc)
+		_touch(2, c_desc, true)
+		await _wait_frames(28)
 		var dn_vel := player.velocity.y
 		print("RUNTIME_CHECK: descend vy=", dn_vel)
 		_assert(dn_vel < -0.05, "descend", "vy %.2f" % dn_vel)
+		_touch(2, c_desc, false)
+		await _wait_frames(10)
 	else:
 		_fail("buttons", "кнопки ВВЕРХ/ВНИЗ не найдены")
 
 	# --- 5. Пауза через кнопку II ---
 	var pause_btn := controls._btn_pause as Button
 	if pause_btn != null:
-		await _tap_button(pause_btn, 2, 10)
-		await _wait_frames(5)
+		var c_pause := _global_center(pause_btn)
+		_touch(3, c_pause, true)
+		await _wait_frames(10)
+		_touch(3, c_pause, false)
+		await _wait_frames(8)
 		_assert(get_tree().paused, "pause open", "paused=%s" % get_tree().paused)
 
 		# --- 6. Настройки: качество + FPS при открытой паузе ---
@@ -99,7 +111,10 @@ func _run_check() -> void:
 		# --- 7. «Продолжить» — реальным тапом по кнопке ---
 		var resume := _find_button_by_text(ui, "Продолжить")
 		if resume != null:
-			await _tap_button(resume, 2, 10)
+			var c_res := _global_center(resume)
+			_touch(3, c_res, true)
+			await _wait_frames(10)
+			_touch(3, c_res, false)
 			await _wait_frames(10)
 			_assert(not get_tree().paused, "pause resume", "paused=%s" % get_tree().paused)
 		else:
