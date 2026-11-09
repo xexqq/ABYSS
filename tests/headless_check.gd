@@ -14,6 +14,20 @@ func _ready() -> void:
 	_run_check()
 
 
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag or event is InputEventMouseButton or event is InputEventMouseMotion:
+		var short := ""
+		if event is InputEventScreenTouch:
+			short = "T idx=%d pr=%s pos=%s" % [event.index, event.pressed, event.position]
+		elif event is InputEventScreenDrag:
+			short = "D idx=%d rel=%s pos=%s" % [event.index, event.relative, event.position]
+		elif event is InputEventMouseButton:
+			short = "M btn=%d pr=%s pos=%s" % [event.button_index, event.pressed, event.position]
+		else:
+			short = "MM pos=%s rel=%s" % [event.position, event.relative]
+		print("EV: ", short)
+
+
 func _run_check() -> void:
 	var ps := load("res://scenes/game.tscn") as PackedScene
 	if ps == null:
@@ -73,7 +87,10 @@ func _run_check() -> void:
 		var c_asc := _global_center(asc)
 		print("RUNTIME_CHECK: asc rect=", asc.get_global_rect(), " center=", c_asc)
 		_touch(2, c_asc, true)
-		await _wait_frames(28)
+		for k in range(28):
+			await get_tree().process_frame
+			if k % 7 == 0:
+				print("  asc hold f%d: paused=%s pos.y=%.2f vy=%.2f lift=%s" % [k, get_tree().paused, player.global_position.y, player.velocity.y, player.get("lift_input")])
 		var up_vel := player.velocity.y
 		print("RUNTIME_CHECK: ascend state btn_pressed=%s lift_input=%s vy=%.2f" % [asc.button_pressed, player.get("lift_input"), up_vel])
 		_assert(absf(up_vel) > 0.1, "ascend", "vy %.2f" % up_vel)
