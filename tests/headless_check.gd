@@ -85,16 +85,20 @@ func _run_check() -> void:
 	var desc := controls._btn_desc as Button
 	if asc != null and desc != null:
 		var c_asc := _global_center(asc)
-		print("RUNTIME_CHECK: asc rect=", asc.get_global_rect(), " center=", c_asc)
+		var y_before: float = player.global_position.y
 		_touch(2, c_asc, true)
-		for k in range(28):
+		for k in range(20):
 			await get_tree().process_frame
-			if k % 7 == 0:
-				print("  asc hold f%d: paused=%s pos.y=%.2f vy=%.2f lift=%s" % [k, get_tree().paused, player.global_position.y, player.velocity.y, player.get("lift_input")])
-		var up_vel := player.velocity.y
-		print("RUNTIME_CHECK: ascend state btn_pressed=%s lift_input=%s vy=%.2f" % [asc.button_pressed, player.get("lift_input"), up_vel])
-		_assert(absf(up_vel) > 0.1, "ascend", "vy %.2f" % up_vel)
 		_touch(2, c_asc, false)
+		await _wait_frames(4)
+		var y_rise: float = player.global_position.y - y_before
+		print("RUNTIME_CHECK: ascend rise=%.2f (before %.2f after %.2f)" % [y_rise, y_before, player.global_position.y])
+		_assert(float(y_rise) > 1.5, "ascend", "не всплыл (dy %.2f)" % float(y_rise))
+		# Свалиться обратно к дну перед следующим тестом.
+		_touch(2, _global_center(desc), true)
+		await _wait_frames(40)
+		_touch(2, _global_center(desc), false)
+		await _wait_frames(30)
 		await _wait_frames(10)
 
 		var c_desc := _global_center(desc)

@@ -202,15 +202,13 @@ func _start(idx: int, pos: Vector2) -> void:
 	var vs := _root.get_viewport_rect().size
 	if _in_any_btn(pos):
 		_roles[idx] = Role.BTN
-		return
-	var in_joy_zone := pos.x < vs.x * 0.45 and pos.y > vs.y * 0.45
-	if in_joy_zone and _joy_finger == -1:
+	elif pos.x < vs.x * 0.45 and pos.y > vs.y * 0.45 and _joy_finger == -1:
 		_joy_finger = idx
 		_roles[idx] = Role.JOY
 		_joy_center = pos
 		_joy_update_visual()
-		return
-	_roles[idx] = Role.LOOK
+	else:
+		_roles[idx] = Role.LOOK
 	_trace("start idx=%d role=%d pos=%s roles=%s" % [idx, _roles[idx], pos, str(_roles.keys())])
 
 
