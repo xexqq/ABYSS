@@ -150,6 +150,7 @@ func _run_check() -> void:
 		print("RUNTIME_CHECK: velocity after settings=%.2f" % after_speed)
 		_assert(after_speed > 0.8, "movement after settings", "скорость %.2f" % after_speed)
 		_touch(0, Vector2.ZERO, false)
+		await _wait_frames(10)
 
 		# --- 9. HUD жив ---
 		var label: Label = _find_label(ui)
