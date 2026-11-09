@@ -23,7 +23,7 @@ func _run_check() -> void:
 	add_child(ps.instantiate())
 	await _wait_frames(60)
 
-	var game := get_children().back()
+	var game: Node = get_child(get_child_count() - 1)
 	var player: CharacterBody3D = game.get_node_or_null("Player")
 	var camera: Camera3D = game.get_node_or_null("Player/Camera")
 	var controls := game.get_node_or_null("TouchControls")
