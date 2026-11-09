@@ -38,3 +38,11 @@
 - BreathSystem: пузырьковый эмиссор от носа при движении >1.2 м/с, bubbles_loop с громкостью по скорости, выдох bubbles_breath.wav раз в 18–34 с.
 - Главное меню main.tscn → scripts/ui/main_menu.gd: Погрузиться → game.tscn, Настройки (качество/FPS/громкость/чувствительность, сохранение SettingsManager), Выход.
 - Исправления: типизация Node3D/Vector3 в стаях, AABB(Vector3,Vector3).
+
+## 2026-11-09 — ПЕРВОПРИЧИНА «неиграбельности» найдена и исправлена
+CI Run 42649655678 ✅ (впервые с runtime smoke-тестом).
+
+- Root cause: touch_controls.gd использовал NOTIFICATION_RESIZED (константа Control) в скрипте extends CanvasLayer → Parse Error → движок ОТКАЗЫВАЛСЯ грузить весь скрипт → CanvasLayer добавлялся «пустым»: ни сигналов, ни джойстика, ни кнопок, ни свайпов. Проблема существовала с самого первого рабочего билда.
+- Найдена новым CI-этапом «Runtime smoke test»: godot --headless реально запускает scenes/game.tscn и scenes/main.tscn, собирает SCRIPT ERROR и валит сборку.
+- Fix: компонент радиуса джойстика вычисляется динамически; _notification удалён.
+- Также исправлено ранее в цикле: статический вызов DepthManager.zone_name (был instance call), отказоустойчивый порядок инициализации (ввод/HUD до некритичных систем), debug-оверлей шагов + on-device diag тач-событий (ВРЕМЕННО, до подтверждения управления пользователем).
