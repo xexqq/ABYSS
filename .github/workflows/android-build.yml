@@ -87,6 +87,21 @@ jobs:
           fi
           echo "Runtime smoke test OK"
 
+      - name: E2E control/settings checks (headless input simulation)
+        run: |
+          set +e
+          timeout 180 "$GODOT_BIN" --headless --path . res://tests/headless_check.tscn 2>&1 | tee runtime_check.log
+          RC=$?
+          set -e
+          echo "=== runtime_check.log ==="
+          grep "RUNTIME_CHECK" runtime_check.log || true
+          if [ "$RC" -ne 0 ]; then
+            echo "FAIL: E2E checks failed (exit $RC)"
+            exit 1
+          fi
+          grep -q "RUNTIME_CHECK: OK" runtime_check.log || { echo "FAIL: no OK marker"; exit 1; }
+          echo "E2E checks passed"
+
       - name: Generate debug keystore (temporary, not committed)
         run: |
           mkdir -p /tmp/keys
@@ -134,4 +149,5 @@ jobs:
             export.log
             runtime_game.log
             runtime_menu.log
+            runtime_check.log
           if-no-files-found: ignore

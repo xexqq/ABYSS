@@ -215,11 +215,12 @@ func _drag(idx: int, pos: Vector2, rel: Vector2) -> void:
 	var role: int = _roles.get(idx, Role.NONE)
 	match role:
 		Role.JOY:
+			# Экранная ось Y растёт вниз — для контроллера «вверх пальцем» = вперёд (+1).
 			var v := pos - _joy_center
 			var rad := _current_radius()
 			if v.length() > rad:
 				v = v / v.length() * rad
-			_joy_vector = v / maxf(rad, 1.0)
+			_joy_vector = Vector2(v.x / maxf(rad, 1.0), -v.y / maxf(rad, 1.0))
 			move_changed.emit(_joy_vector)
 			_joy_update_visual()
 		Role.LOOK:
