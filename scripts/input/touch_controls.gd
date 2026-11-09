@@ -26,6 +26,8 @@ var _btn_asc: Button
 var _btn_desc: Button
 var _btn_pause: Button
 var _joy_radius := 80.0
+var _diag: Label                # ВРЕМЕННО: показывает последние input-события
+var _diag_lines: PackedStringArray = []
 
 
 func _ready() -> void:
@@ -43,6 +45,39 @@ func _ready() -> void:
 	var vs := _root.get_viewport_rect().size
 	_joy_radius = minf(vs.x, vs.y) * JOY_RADIUS_RATIO
 	_joy_update_visual()
+	_build_diag()
+
+
+func _build_diag() -> void:
+	_diag = Label.new()
+	_diag.name = "TouchDiag"
+	_diag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_diag.anchor_top = 0.0
+	_diag.anchor_bottom = 0.0
+	_diag.offset_left = 24.0
+	_diag.offset_top = 224.0
+	_diag.offset_right = 900.0
+	_diag.offset_bottom = 400.0
+	_diag.add_theme_font_size_override("font_size", 24)
+	_diag.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6, 0.9))
+	_root.add_child(_diag)
+
+
+## ВРЕМЕННАЯ диагностика: всё, что движок получает от тач-устройства.
+func _input(event: InputEvent) -> void:
+	if _diag == null:
+		return
+	if event is InputEventScreenTouch:
+		_diag_lines.append("T%d %s @%s" % [event.index, "↓" if event.pressed else "↑", event.position])
+	elif event is InputEventScreenDrag:
+		_diag_lines.append("D%d rel=%s" % [event.index, event.relative])
+	elif event is InputEventMouseButton:
+		_diag_lines.append("M%d %s" % [event.button_index, "↓" if event.pressed else "↑"])
+	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_diag_lines.append("MM rel=%s" % [event.relative])
+	if _diag_lines.size() > 4:
+		_diag_lines = _diag_lines.slice(_diag_lines.size() - 4)
+	_diag.text = "\n".join(_diag_lines)
 
 
 # --- зоны (рисуются первыми, кнопки поверх) -------------------------------

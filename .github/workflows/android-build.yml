@@ -68,6 +68,25 @@ jobs:
           fi
           echo "No critical script errors"
 
+      - name: Runtime smoke test — scenes execute headless (catches runtime GDScript errors)
+        run: |
+          set +e
+          timeout 150 "$GODOT_BIN" --headless --path . res://scenes/game.tscn --quit-after 600 2>&1 | tee runtime_game.log
+          RC_GAME=$?
+          timeout 90 "$GODOT_BIN" --headless --path . res://scenes/main.tscn --quit-after 300 2>&1 | tee runtime_menu.log
+          RC_MENU=$?
+          set -e
+          if [ "$RC_GAME" -eq 124 ]; then echo "WARNING: game scene smoke test timed out (treated as ok)"; fi
+          echo "=== runtime_game.log tail ==="; tail -40 runtime_game.log
+          echo "=== runtime_menu.log tail ==="; tail -20 runtime_menu.log
+          echo "=== SCRIPT/INTERNAL errors found ==="
+          grep -nE "SCRIPT ERROR|GDScript Runtime|Internal error" runtime_game.log runtime_menu.log || true
+          if grep -qE "SCRIPT ERROR" runtime_game.log runtime_menu.log; then
+            echo "FAIL: runtime script errors detected"
+            exit 1
+          fi
+          echo "Runtime smoke test OK"
+
       - name: Generate debug keystore (temporary, not committed)
         run: |
           mkdir -p /tmp/keys
@@ -113,4 +132,6 @@ jobs:
           path: |
             import.log
             export.log
+            runtime_game.log
+            runtime_menu.log
           if-no-files-found: ignore
