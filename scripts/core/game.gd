@@ -20,6 +20,7 @@ var _controls: CanvasLayer
 var _ui: CanvasLayer
 var _rendering: Node
 var _dbg: Label
+var _dbg_marker := "boot"
 
 
 func _ready() -> void:
@@ -146,6 +147,7 @@ func _build_debug_overlay() -> void:
 
 
 func _dbg_log(msg: String) -> void:
+	_dbg_marker = msg
 	if _dbg != null:
 		_dbg.text = msg
 
@@ -156,8 +158,8 @@ func _dbg_update() -> void:
 	var pos := Vector3.ZERO
 	if _player != null and is_instance_valid(_player):
 		pos = _player.global_position
-	_dbg.text = "%s | fps %d\ny=%.1f v=%.1f" % [
-		_dbg.text.split("\n")[0],
+	_dbg.text = "%s | fps %d | y=%.1f | v=%.1f" % [
+		_dbg_marker,
 		Engine.get_frames_per_second(),
 		pos.y,
 		(_player.velocity.length() if _player is CharacterBody3D else 0.0),
