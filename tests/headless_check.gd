@@ -71,10 +71,11 @@ func _run_check() -> void:
 	var desc := controls._btn_desc as Button
 	if asc != null and desc != null:
 		var c_asc := _global_center(asc)
+		print("RUNTIME_CHECK: asc rect=", asc.get_global_rect(), " center=", c_asc)
 		_touch(2, c_asc, true)
 		await _wait_frames(28)
 		var up_vel := player.velocity.y
-		print("RUNTIME_CHECK: ascend vy=", up_vel)
+		print("RUNTIME_CHECK: ascend state btn_pressed=%s lift_input=%s vy=%.2f" % [asc.button_pressed, player.get("lift_input"), up_vel])
 		_assert(absf(up_vel) > 0.1, "ascend", "vy %.2f" % up_vel)
 		_touch(2, c_asc, false)
 		await _wait_frames(10)
@@ -133,6 +134,7 @@ func _run_check() -> void:
 		var label: Label = _find_label(ui)
 		_assert(label != null and label.is_visible_in_tree(), "hud depth label", "нет/скрыт")
 		# --- 10. Отпускания не оставляют активных пальцев ---
+		print("RUNTIME_CHECK: final roles=", controls._roles)
 		_assert(controls._roles.is_empty(), "roles cleared", "остались %s" % str(controls._roles.keys()))
 	else:
 		_fail("pause button", "II не найден")

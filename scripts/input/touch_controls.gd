@@ -135,6 +135,7 @@ func _make_button(text: String, pos: Vector2, side: float, square: bool = false)
 	b.add_theme_stylebox_override("pressed", sbh)
 	b.add_theme_color_override("font_color", Color(0.95, 1.0, 1.0, 0.95))
 	b.focus_mode = Control.FOCUS_NONE
+	b.action_mode = Button.ACTION_MODE_BUTTON_PRESS   # реагировать на нажатие, не на отпускание
 	_root.add_child(b)
 	return b
 
