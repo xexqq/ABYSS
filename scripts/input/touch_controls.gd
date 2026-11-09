@@ -141,10 +141,17 @@ func _make_button(text: String, pos: Vector2, side: float, square: bool = false)
 
 # --- SONAR: джойстик рисуем на Control.draw --------------------------------
 
+func _current_radius() -> float:
+	var vs := Vector2.ONE * 640.0
+	if _root != null and is_instance_valid(_root):
+		vs = _root.get_viewport_rect().size
+	return clampf(minf(vs.x, vs.y) * JOY_RADIUS_RATIO, 60.0, 220.0)
+
+
 func _paint_joy() -> void:
 	var t := _joy_zone as Control
 	var size := t.size
-	var rad := _joy_radius
+	var rad := _current_radius()
 	var center := Vector2(size.x * 0.55, size.y - rad - 40.0)
 	# статичная подсказка
 	t.draw_circle(center, rad, Color(0.75, 0.95, 1.0, 0.10))
@@ -209,9 +216,10 @@ func _drag(idx: int, pos: Vector2, rel: Vector2) -> void:
 	match role:
 		Role.JOY:
 			var v := pos - _joy_center
-			if v.length() > _joy_radius:
-				v = v / v.length() * _joy_radius
-			_joy_vector = v / maxf(_joy_radius, 1.0)
+			var rad := _current_radius()
+			if v.length() > rad:
+				v = v / v.length() * rad
+			_joy_vector = v / maxf(rad, 1.0)
 			move_changed.emit(_joy_vector)
 			_joy_update_visual()
 		Role.LOOK:
@@ -227,9 +235,3 @@ func _end(idx: int) -> void:
 			move_changed.emit(Vector2.ZERO)
 			_joy_update_visual()
 	_roles.erase(idx)
-
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED and _root != null:
-		_joy_radius = minf(_root.get_viewport_rect().size.x, _root.get_viewport_rect().size.y) * JOY_RADIUS_RATIO
-		_joy_update_visual()
