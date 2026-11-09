@@ -54,6 +54,12 @@ func _ready() -> void:
 	_player = CharacterBody3D.new()
 	_player.name = "Player"
 	_player.set_script(load("res://scripts/core/player_controller.gd"))
+	var pshape := CollisionShape3D.new()
+	pshape.name = "CollisionShape"
+	var sph := SphereShape3D.new()
+	sph.radius = 0.42
+	pshape.shape = sph
+	_player.add_child(pshape)
 	add_child(_player)
 	_player.global_position = PLAYER_SPAWN
 	_camera = Camera3D.new()

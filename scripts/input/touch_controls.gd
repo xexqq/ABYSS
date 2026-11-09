@@ -211,6 +211,11 @@ func _start(idx: int, pos: Vector2) -> void:
 		_joy_update_visual()
 		return
 	_roles[idx] = Role.LOOK
+	_trace("start idx=%d role=%d pos=%s roles=%s" % [idx, _roles[idx], pos, str(_roles.keys())])
+
+
+func _trace(msg: String) -> void:
+	print("TC: ", msg)
 
 
 func _drag(idx: int, pos: Vector2, rel: Vector2) -> void:
@@ -238,3 +243,4 @@ func _end(idx: int) -> void:
 			move_changed.emit(Vector2.ZERO)
 			_joy_update_visual()
 	_roles.erase(idx)
+	_trace("end idx=%d roles=%s" % [idx, str(_roles.keys())])
